@@ -1,0 +1,27 @@
+<edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/UI.xml">
+        <edmx:Include Namespace="com.sap.vocabularies.UI.v1" Alias="UI"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="/sap/opu/odata4/sap/ui_ctr9902govtp/srvd/sap/ui_ctr9902govtp/0001/$metadata">
+        <edmx:Include Namespace="com.sap.gateway.srvd.ui_ctr9902govtp.v0001" Alias="SAP__self"/>
+    </edmx:Reference>
+    <edmx:DataServices>
+        <Schema xmlns="http://docs.oasis-open.org/odata/ns/edm" Namespace="local">
+            <Annotations Target="SAP__self.CTR9902Type">
+                <Annotation Term="UI.Identification">
+                    <Collection>
+                        <Record Type="UI.DataFieldForAction">
+                            <PropertyValue Property="Label" String="Submit"/>
+                            <PropertyValue Property="Action" String="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.SubmitProcess(com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type)"/>
+                            <PropertyValue Property="InvocationGrouping" EnumMember="UI.OperationGroupingType/Isolated"/>
+                        </Record>
+                        <Record Type="UI.DataFieldForAction">
+                            <PropertyValue Property="Action" String="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.Check"/>
+                            <PropertyValue Property="Label" String="Check"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>
