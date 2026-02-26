@@ -1,7 +1,7 @@
 ## Application Details
 |               |
 | ------------- |
-|**Generation Date and Time**<br>Tue Dec 23 2025 19:54:32 GMT+0000 (Coordinated Universal Time)|
+|**Generation Date and Time**<br>Tue Jan 06 2026 21:13:02 GMT+0000 (Coordinated Universal Time)|
 |**App Generator**<br>SAP Fiori Application Generator|
 |**App Generator Version**<br>1.20.0|
 |**Generation Platform**<br>SAP Business Application Studio|
@@ -9,7 +9,7 @@
 |**Service Type**<br>SAP System (ABAP On-Premise)|
 |**Service URL**<br>http://is1r3.itego.de:53600/sap/opu/odata4/sap/ui_ctr9902govtp/srvd/sap/ui_ctr9902govtp/0001/|
 |**Module Name**<br>govern9902|
-|**Application Title**<br>Manage Governance Processes - Country 9902|
+|**Application Title**<br>Government CTR 9902|
 |**Namespace**<br>customer|
 |**UI5 Theme**<br>sap_horizon|
 |**UI5 Version**<br>1.136.0|
@@ -21,7 +21,7 @@
 
 ## govern9902
 
-Manage Governance Processes - Country 9902
+An SAP Fiori application.
 
 ### Starting the generated app
 

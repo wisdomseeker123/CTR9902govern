@@ -19,7 +19,7 @@ builder:
           client: '100'
         app:
           name: /ITR/9902_SG
-          description: Single Governance 9902
+          description: Govern 9902
           package: /ITR/MDC_9902_UI_GOVERN
           transport: IS1K900292
         exclude:

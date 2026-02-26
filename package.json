@@ -1,7 +1,7 @@
 {
   "name": "govern9902",
   "version": "0.0.1",
-  "description": "Manage Governance Processes - Country 9902",
+  "description": "An SAP Fiori application.",
   "keywords": [
     "ui5",
     "openui5",

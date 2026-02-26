@@ -143,15 +143,21 @@
             <EntityType Name="CTR9902TType">
                 <Key>
                     <PropertyRef Name="MasterDataChangeProcess"/>
+                    <PropertyRef Name="MDChgProcessStep"/>
                     <PropertyRef Name="MDChgProcessSrceSystem"/>
                     <PropertyRef Name="MDChgProcessSrceObject"/>
+                    <PropertyRef Name="Language"/>
                     <PropertyRef Name="DraftUUID"/>
                     <PropertyRef Name="IsActiveEntity"/>
                 </Key>
                 <Property Name="MasterDataChangeProcess" Type="Edm.String" Nullable="false" MaxLength="12"/>
+                <Property Name="MDChgProcessStep" Type="Edm.String" Nullable="false" MaxLength="4"/>
                 <Property Name="MDChgProcessSrceSystem" Type="Edm.String" Nullable="false" MaxLength="60"/>
                 <Property Name="MDChgProcessSrceObject" Type="Edm.String" Nullable="false" MaxLength="60"/>
-                <Property Name="MDChgProcessStep" Type="Edm.String" Nullable="false" MaxLength="4"/>
+                <Property Name="Language" Type="Edm.String" Nullable="false" MaxLength="2"/>
+                <Property Name="LanguageForEdit" Type="Edm.String" Nullable="false" MaxLength="2"/>
+                <Property Name="CountryName" Type="Edm.String" Nullable="false" MaxLength="50"/>
+                <Property Name="CountryShortName" Type="Edm.String" Nullable="false" MaxLength="15"/>
                 <Property Name="HasDraftEntity" Type="Edm.Boolean" Nullable="false"/>
                 <Property Name="DraftUUID" Type="Edm.Guid" Nullable="false"/>
                 <Property Name="ParentDraftUUID" Type="Edm.Guid"/>
@@ -198,6 +204,7 @@
             </ComplexType>
             <ComplexType Name="CTR9902OperationControl">
                 <Property Name="CheckAsAction" Type="Edm.Boolean" Nullable="false"/>
+                <Property Name="CreateMassRequestSelected" Type="Edm.Boolean" Nullable="false"/>
                 <Property Name="Edit" Type="Edm.Boolean" Nullable="false"/>
                 <Property Name="SubmitProcess" Type="Edm.Boolean" Nullable="false"/>
             </ComplexType>
@@ -222,6 +229,9 @@
                 <Parameter Name="_it" Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
                 <ReturnType Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
             </Action>
+            <Action Name="CreateMassRequestSelected" IsBound="true">
+                <Parameter Name="_it" Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
+            </Action>
             <Action Name="SubmitProcess" EntitySetPath="_it" IsBound="true">
                 <Parameter Name="_it" Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
                 <ReturnType Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
@@ -229,12 +239,24 @@
             <Action Name="Prepare" IsBound="true">
                 <Parameter Name="_it" Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
             </Action>
+            <Action Name="CreateMassRequest" EntitySetPath="_it" IsBound="true">
+                <Parameter Name="_it" Type="Collection(com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type)" Nullable="false"/>
+                <Parameter Name="MasterDataChangeProcess" Type="Edm.String" Nullable="false" MaxLength="12"/>
+                <Parameter Name="MDChgProcessSrceObject" Type="Edm.String" Nullable="false" MaxLength="60"/>
+                <Parameter Name="MDChgProcessNmbrOfSrceRecords" Type="Edm.Int32" Nullable="false"/>
+                <ReturnType Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
+            </Action>
             <Action Name="Resume" IsBound="true">
                 <Parameter Name="_it" Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
             </Action>
             <Action Name="Edit" EntitySetPath="_it" IsBound="true">
                 <Parameter Name="_it" Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
                 <Parameter Name="PreserveChanges" Type="Edm.Boolean" Nullable="false"/>
+                <ReturnType Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
+            </Action>
+            <Action Name="CreateMassRequestAll" EntitySetPath="_it" IsBound="true">
+                <Parameter Name="_it" Type="Collection(com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type)" Nullable="false"/>
+                <Parameter Name="MDChangeProcessFilterValue" Type="Edm.String" Nullable="false"/>
                 <ReturnType Type="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type" Nullable="false"/>
             </Action>
             <Action Name="Discard" IsBound="true">
@@ -592,9 +614,8 @@
                 <Annotation Term="SAP__common.QuickInfo" String="Master Data Change Process Step Number"/>
             </Annotations>
             <Annotations Target="SAP__self.CTR9902Type/Country">
-                <Annotation Term="SAP__common.Label" String="Country"/>
-                <Annotation Term="SAP__common.QuickInfo" String="Country"/>
                 <Annotation Term="SAP__common.IsUpperCase"/>
+                <Annotation Term="SAP__common.Label" String="Country/Region Key"/>
                 <Annotation Term="SAP__common.Heading" String="C/R"/>
                 <Annotation Term="SAP__common.DocumentationRef" String="urn:sap-com:documentation:key?=type=DE&amp;id=LAND1"/>
             </Annotations>
@@ -718,7 +739,9 @@
                 </Annotation>
                 <Annotation Term="SAP__capabilities.SearchRestrictions">
                     <Record>
-                        <PropertyValue Property="Searchable" Bool="false"/>
+                        <PropertyValue Property="Searchable" Bool="true"/>
+                        <PropertyValue Property="UnsupportedExpressions" EnumMember="SAP__capabilities.SearchExpressions/AND SAP__capabilities.SearchExpressions/NOT SAP__capabilities.SearchExpressions/group "/>
+                        <PropertyValue Property="SearchSyntax" String="https://url.sap/odata-search"/>
                     </Record>
                 </Annotation>
                 <Annotation Term="SAP__capabilities.FilterRestrictions">
@@ -801,8 +824,16 @@
             <Annotations Target="SAP__self.CheckAsAction(SAP__self.CTR9902Type)">
                 <Annotation Term="SAP__core.OperationAvailable" Path="_it/__OperationControl/CheckAsAction"/>
             </Annotations>
+            <Annotations Target="SAP__self.CreateMassRequestSelected(SAP__self.CTR9902Type)">
+                <Annotation Term="SAP__core.OperationAvailable" Path="_it/__OperationControl/CreateMassRequestSelected"/>
+            </Annotations>
             <Annotations Target="SAP__self.SubmitProcess(SAP__self.CTR9902Type)">
                 <Annotation Term="SAP__core.OperationAvailable" Path="_it/__OperationControl/SubmitProcess"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CreateMassRequest(Collection(SAP__self.CTR9902Type))/MasterDataChangeProcess">
+                <Annotation Term="SAP__common.Label" String="Process"/>
+                <Annotation Term="SAP__common.Heading" String="Process ID"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Master Data Change Process Identifier"/>
             </Annotations>
             <Annotations Target="SAP__self.Edit(SAP__self.CTR9902Type)/PreserveChanges">
                 <Annotation Term="SAP__common.IsUpperCase"/>
@@ -812,27 +843,65 @@
             <Annotations Target="SAP__self.Edit(SAP__self.CTR9902Type)">
                 <Annotation Term="SAP__core.OperationAvailable" Path="_it/__OperationControl/Edit"/>
             </Annotations>
+            <Annotations Target="SAP__self.CreateMassRequestAll(Collection(SAP__self.CTR9902Type))/MDChangeProcessFilterValue">
+                <Annotation Term="SAP__common.Label" String="Process"/>
+                <Annotation Term="SAP__common.IsUpperCase"/>
+                <Annotation Term="SAP__common.Heading" String="Value"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Saved Search Value"/>
+            </Annotations>
             <Annotations Target="SAP__self.CTR9902TType/MasterDataChangeProcess">
+                <Annotation Term="SAP__common.Label" String="Process ID"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Process ID"/>
                 <Annotation Term="SAP__core.Computed"/>
                 <Annotation Term="SAP__common.IsDigitSequence"/>
-                <Annotation Term="SAP__common.Label" String="Process ID"/>
-                <Annotation Term="SAP__common.QuickInfo" String="Master Data Change Process Identifier"/>
-            </Annotations>
-            <Annotations Target="SAP__self.CTR9902TType/MDChgProcessSrceSystem">
-                <Annotation Term="SAP__core.Computed"/>
-                <Annotation Term="SAP__common.Label" String="Source System"/>
-            </Annotations>
-            <Annotations Target="SAP__self.CTR9902TType/MDChgProcessSrceObject">
-                <Annotation Term="SAP__core.Computed"/>
-                <Annotation Term="SAP__common.Label" String="Source ID"/>
-                <Annotation Term="SAP__common.QuickInfo" String="Master Data Consolidation: ID of a Source Objects"/>
+                <Annotation Term="SAP__UI.HiddenFilter"/>
+                <Annotation Term="SAP__UI.Hidden"/>
+                <Annotation Term="SAP__common.Heading" String="Process ID"/>
             </Annotations>
             <Annotations Target="SAP__self.CTR9902TType/MDChgProcessStep">
                 <Annotation Term="SAP__core.Computed"/>
                 <Annotation Term="SAP__common.IsDigitSequence"/>
+                <Annotation Term="SAP__UI.Hidden"/>
                 <Annotation Term="SAP__common.Label" String="Process Step Number"/>
                 <Annotation Term="SAP__common.Heading" String="Process current Step Number"/>
                 <Annotation Term="SAP__common.QuickInfo" String="Master Data Change Process Step Number"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CTR9902TType/MDChgProcessSrceSystem">
+                <Annotation Term="SAP__core.Computed"/>
+                <Annotation Term="SAP__UI.HiddenFilter"/>
+                <Annotation Term="SAP__UI.Hidden"/>
+                <Annotation Term="SAP__common.Label" String="Source System"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CTR9902TType/MDChgProcessSrceObject">
+                <Annotation Term="SAP__core.Computed"/>
+                <Annotation Term="SAP__UI.HiddenFilter"/>
+                <Annotation Term="SAP__UI.Hidden"/>
+                <Annotation Term="SAP__common.Label" String="Source ID"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Master Data Consolidation: ID of a Source Objects"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CTR9902TType/Language">
+                <Annotation Term="SAP__common.Label" String="Language"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Language"/>
+                <Annotation Term="SAP__UI.Hidden"/>
+                <Annotation Term="SAP__common.Heading" String="Language"/>
+                <Annotation Term="SAP__common.DocumentationRef" String="urn:sap-com:documentation:key?=type=DE&amp;id=SPRAS"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CTR9902TType/LanguageForEdit">
+                <Annotation Term="SAP__common.Label" String="Language"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Language"/>
+                <Annotation Term="SAP__common.Heading" String="Language"/>
+                <Annotation Term="SAP__common.DocumentationRef" String="urn:sap-com:documentation:key?=type=DE&amp;id=SPRAS"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CTR9902TType/CountryName">
+                <Annotation Term="SAP__common.Label" String="Description (long text)"/>
+                <Annotation Term="SAP__common.Heading" String="Country/Region Name"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Country/Region Name"/>
+                <Annotation Term="SAP__common.DocumentationRef" String="urn:sap-com:documentation:key?=type=DE&amp;id=LANDX50"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CTR9902TType/CountryShortName">
+                <Annotation Term="SAP__common.Label" String="Description (short text)"/>
+                <Annotation Term="SAP__common.Heading" String="Country/Reg. Name"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Name of Country/Region (Short)"/>
             </Annotations>
             <Annotations Target="SAP__self.CTR9902TType/HasDraftEntity">
                 <Annotation Term="SAP__core.Computed"/>
@@ -1183,6 +1252,12 @@
                     <Collection>
                         <Record Type="SAP__UI.ReferenceFacet">
                             <PropertyValue Property="Label" String="Process Information"/>
+                            <PropertyValue Property="ID" String="ProcessInfo"/>
+                            <PropertyValue Property="Target" AnnotationPath="_Process/@SAP__UI.FieldGroup#ProcessData"/>
+                            <Annotation Term="SAP__UI.Importance" EnumMember="SAP__UI.ImportanceType/High"/>
+                        </Record>
+                        <Record Type="SAP__UI.ReferenceFacet">
+                            <PropertyValue Property="Label" String=" "/>
                             <PropertyValue Property="ID" String="ProcessDataSection"/>
                             <PropertyValue Property="Target" AnnotationPath="@SAP__UI.FieldGroup#ProcessDataSection"/>
                         </Record>
@@ -1193,16 +1268,26 @@
                                 <Collection>
                                     <Record Type="SAP__UI.ReferenceFacet">
                                         <PropertyValue Property="Label" String=""/>
-                                        <PropertyValue Property="ID" String="CountryKey"/>
+                                        <PropertyValue Property="ID" String="CountryName"/>
                                         <PropertyValue Property="Target" AnnotationPath="@SAP__UI.FieldGroup#CountryKey"/>
                                     </Record>
                                     <Record Type="SAP__UI.ReferenceFacet">
-                                        <PropertyValue Property="Label" String="Country Attributes"/>
+                                        <PropertyValue Property="Label" String="General Data"/>
+                                        <PropertyValue Property="ID" String="CountryGeneral"/>
+                                        <PropertyValue Property="Target" AnnotationPath="@SAP__UI.FieldGroup#GeneralInformation"/>
+                                    </Record>
+                                    <Record Type="SAP__UI.ReferenceFacet">
+                                        <PropertyValue Property="Label" String="Attributes"/>
                                         <PropertyValue Property="ID" String="CountryAttributes"/>
                                         <PropertyValue Property="Target" AnnotationPath="@SAP__UI.FieldGroup#CountryAttributes"/>
                                     </Record>
                                 </Collection>
                             </PropertyValue>
+                        </Record>
+                        <Record Type="SAP__UI.ReferenceFacet">
+                            <PropertyValue Property="Label" String="Country Description"/>
+                            <PropertyValue Property="ID" String="CountryText"/>
+                            <PropertyValue Property="Target" AnnotationPath="_CTR9902T/@SAP__UI.LineItem"/>
                         </Record>
                     </Collection>
                 </Annotation>
@@ -1261,73 +1346,129 @@
                     <Record>
                         <PropertyValue Property="TypeName" String="Country"/>
                         <PropertyValue Property="TypeNamePlural" String="Countries"/>
+                        <PropertyValue Property="Title">
+                            <Record Type="SAP__UI.DataField">
+                                <PropertyValue Property="Label" String="Country"/>
+                                <PropertyValue Property="Value" Path="Country"/>
+                            </Record>
+                        </PropertyValue>
                     </Record>
                 </Annotation>
                 <Annotation Term="SAP__UI.Identification">
                     <Collection>
                         <Record Type="SAP__UI.DataFieldForAction">
-                            <PropertyValue Property="Label" String="Check Country as Action"/>
-                            <PropertyValue Property="Action" String="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CheckAsAction(com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type)"/>
-                            <PropertyValue Property="InvocationGrouping" EnumMember="SAP__UI.OperationGroupingType/Isolated"/>
-                        </Record>
-                        <Record Type="SAP__UI.DataFieldForAction">
                             <PropertyValue Property="Label" String="Submit"/>
                             <PropertyValue Property="Action" String="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.SubmitProcess(com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type)"/>
                             <PropertyValue Property="InvocationGrouping" EnumMember="SAP__UI.OperationGroupingType/Isolated"/>
                         </Record>
-                    </Collection>
-                </Annotation>
-                <Annotation Term="SAP__UI.Identification" Qualifier="CountryKey">
-                    <Collection>
-                        <Record Type="SAP__UI.DataField">
-                            <PropertyValue Property="Value" Path="Country"/>
+                        <Record Type="SAP__UI.DataFieldForAction">
+                            <PropertyValue Property="Label" String="Check via action"/>
+                            <PropertyValue Property="Action" String="com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CheckAsAction(com.sap.gateway.srvd.ui_ctr9902govtp.v0001.CTR9902Type)"/>
+                            <PropertyValue Property="InvocationGrouping" EnumMember="SAP__UI.OperationGroupingType/Isolated"/>
                         </Record>
                     </Collection>
                 </Annotation>
                 <Annotation Term="SAP__UI.LineItem">
                     <Collection>
                         <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="Country"/>
                             <PropertyValue Property="Value" Path="Country"/>
-                            <Annotation Term="SAP__UI.Importance" EnumMember="SAP__UI.ImportanceType/High"/>
                         </Record>
                         <Record Type="SAP__UI.DataField">
                             <PropertyValue Property="Label" String="ISO Code"/>
                             <PropertyValue Property="Value" Path="CountryISOCode"/>
                         </Record>
                         <Record Type="SAP__UI.DataField">
-                            <PropertyValue Property="Label" String="ISO Code Numeric 3-Characters"/>
-                            <PropertyValue Property="Value" Path="CountryThreeDigitISOCode"/>
-                        </Record>
-                        <Record Type="SAP__UI.DataField">
                             <PropertyValue Property="Label" String="ISO Code 3 Characters"/>
                             <PropertyValue Property="Value" Path="CountryThreeLetterISOCode"/>
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Label" String="ISO Code Numeric 3-Characters"/>
+                            <PropertyValue Property="Value" Path="CountryThreeDigitISOCode"/>
                         </Record>
                     </Collection>
                 </Annotation>
                 <Annotation Term="SAP__UI.PresentationVariant">
                     <Record>
-                        <PropertyValue Property="MaxItems" Int="3"/>
                         <PropertyValue Property="SortOrder">
                             <Collection>
                                 <Record Type="SAP__common.SortOrderType">
                                     <PropertyValue Property="Property" PropertyPath="Country"/>
-                                    <PropertyValue Property="Descending" Bool="true"/>
+                                    <PropertyValue Property="Descending" Bool="false"/>
                                 </Record>
                             </Collection>
                         </PropertyValue>
-                        <PropertyValue Property="RequestAtLeast">
+                        <PropertyValue Property="Visualizations">
                             <Collection>
-                                <PropertyPath>Country</PropertyPath>
+                                <AnnotationPath>@SAP__UI.LineItem</AnnotationPath>
                             </Collection>
                         </PropertyValue>
                     </Record>
                 </Annotation>
                 <Annotation Term="SAP__UI.SelectionFields">
                     <Collection>
-                        <PropertyPath>Country</PropertyPath>
                         <PropertyPath>CountryISOCode</PropertyPath>
                         <PropertyPath>CountryThreeLetterISOCode</PropertyPath>
                         <PropertyPath>CountryThreeDigitISOCode</PropertyPath>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__common.Messages" Path="SAP__Messages"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CTR9902TType">
+                <Annotation Term="SAP__UI.Facets">
+                    <Collection>
+                        <Record Type="SAP__UI.ReferenceFacet">
+                            <PropertyValue Property="Label" String="Country Description"/>
+                            <PropertyValue Property="ID" String="CountryText"/>
+                            <PropertyValue Property="Target" AnnotationPath="@SAP__UI.FieldGroup#CountryText"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="SAP__UI.FieldGroup" Qualifier="CountryText">
+                    <Record>
+                        <PropertyValue Property="Data">
+                            <Collection>
+                                <Record Type="SAP__UI.DataField">
+                                    <PropertyValue Property="Value" Path="LanguageForEdit"/>
+                                </Record>
+                                <Record Type="SAP__UI.DataField">
+                                    <PropertyValue Property="Value" Path="Language"/>
+                                </Record>
+                                <Record Type="SAP__UI.DataField">
+                                    <PropertyValue Property="Value" Path="CountryName"/>
+                                </Record>
+                                <Record Type="SAP__UI.DataField">
+                                    <PropertyValue Property="Value" Path="CountryShortName"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="SAP__UI.HeaderInfo">
+                    <Record>
+                        <PropertyValue Property="TypeName" String="Country Description"/>
+                        <PropertyValue Property="TypeNamePlural" String="Items"/>
+                        <PropertyValue Property="Title">
+                            <Record Type="SAP__UI.DataField">
+                                <PropertyValue Property="Value" Path="CountryName"/>
+                            </Record>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+                <Annotation Term="SAP__UI.LineItem">
+                    <Collection>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Value" Path="LanguageForEdit"/>
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Value" Path="Language"/>
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Value" Path="CountryName"/>
+                        </Record>
+                        <Record Type="SAP__UI.DataField">
+                            <PropertyValue Property="Value" Path="CountryShortName"/>
+                        </Record>
                     </Collection>
                 </Annotation>
                 <Annotation Term="SAP__common.Messages" Path="SAP__Messages"/>
@@ -1342,6 +1483,9 @@
                 <Annotation Term="SAP__UI.HiddenFilter"/>
             </Annotations>
             <Annotations Target="SAP__self.ChangeProcessType/_FurtherObjects">
+                <Annotation Term="SAP__UI.HiddenFilter"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CTR9902TType/_CTR9902">
                 <Annotation Term="SAP__UI.HiddenFilter"/>
             </Annotations>
             <Annotations Target="SAP__self.I_DraftAdministrativeDataType/DraftUUID">
@@ -1401,9 +1545,6 @@
                 <Annotation Term="SAP__common.Label" String="Process Due Date"/>
                 <Annotation Term="SAP__common.QuickInfo" String="Master Data Change Process Due Date"/>
             </Annotations>
-            <Annotations Target="SAP__self.CTR9902TType">
-                <Annotation Term="SAP__common.Messages" Path="SAP__Messages"/>
-            </Annotations>
             <Annotations Target="SAP__self.I_DraftAdministrativeDataType/CreationDateTime">
                 <Annotation Term="SAP__common.Label" String="Draft Created On"/>
             </Annotations>
@@ -1421,6 +1562,11 @@
                 <Annotation Term="SAP__common.QuickInfo" String="Dynamic Create via Association Control Property"/>
             </Annotations>
             <Annotations Target="SAP__self.CTR9902OperationControl/CheckAsAction">
+                <Annotation Term="SAP__common.Label" String="Dyn. Action Control"/>
+                <Annotation Term="SAP__common.Heading" String="Dynamic Action Control"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Dynamic Action Property"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CTR9902OperationControl/CreateMassRequestSelected">
                 <Annotation Term="SAP__common.Label" String="Dyn. Action Control"/>
                 <Annotation Term="SAP__common.Heading" String="Dynamic Action Control"/>
                 <Annotation Term="SAP__common.QuickInfo" String="Dynamic Action Property"/>
@@ -1444,6 +1590,15 @@
                 <Annotation Term="SAP__common.Label" String="Dyn. Method Control"/>
                 <Annotation Term="SAP__common.Heading" String="Dynamic Method Control"/>
                 <Annotation Term="SAP__common.QuickInfo" String="Dynamic Method Property"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CreateMassRequest(Collection(SAP__self.CTR9902Type))/MDChgProcessSrceObject">
+                <Annotation Term="SAP__common.Label" String="Source ID"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Master Data Consolidation: ID of a Source Objects"/>
+            </Annotations>
+            <Annotations Target="SAP__self.CreateMassRequest(Collection(SAP__self.CTR9902Type))/MDChgProcessNmbrOfSrceRecords">
+                <Annotation Term="SAP__common.Label" String="Number of Records"/>
+                <Annotation Term="SAP__common.Heading" String="Number of Source Records"/>
+                <Annotation Term="SAP__common.QuickInfo" String="Master Data Change Process Number of Source Records"/>
             </Annotations>
         </Schema>
     </edmx:DataServices>

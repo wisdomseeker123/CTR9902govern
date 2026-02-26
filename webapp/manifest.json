@@ -13,7 +13,7 @@
     "sourceTemplate": {
       "id": "@sap/generator-fiori:lrop",
       "version": "1.20.0",
-      "toolsId": "3c93fe59-f3f8-465b-968f-2d04d37b0df4"
+      "toolsId": "a0c0d0c7-f94a-48dc-8263-17074678880a"
     },
     "dataSources": {
       "annotation": {
@@ -134,6 +134,15 @@
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
                     "type": "ResponsiveTable"
+                  },
+                  "actions": {
+                    "Process": {
+                      "press": "customer.govern9902.ext.controller.ProcessController.process",
+                      "visible": true,
+                      "enabled": true,
+                      "requiresSelection": true,
+                      "text": "Process"
+                    }
                   }
                 }
               }
@@ -147,19 +156,7 @@
           "options": {
             "settings": {
               "editableHeaderContent": false,
-              "contextPath": "/CTR9902",
-              "content": {
-                "footer": {
-                  "actions": {
-                    "SaveJMSVO": {
-                      "press": "customer.govern9902.ext.controller.JMSVOController.SaveJMSVO",
-                      "visible": true,
-                      "enabled": true,
-                      "text": "SaveJMSVO"
-                    }
-                  }
-                }
-              }
+              "contextPath": "/CTR9902"
             }
           }
         }
